@@ -15,3 +15,15 @@ body div#app {
 body #showModalBtn {
   margin: 20px 0px;
 }
+
+.layout-logo{
+  width: 100px;
+  height: 30px;
+ background: url("../logo.png") left center no-repeat content-box;;
+  border-radius: 3px;
+  float: left;
+  position: relative;
+  top: 15px;
+  left: 20px;
+  margin-right: 10px;    
+}

@@ -16,7 +16,7 @@
   <div id="app">
     <i-header>
       <i-menu mode="horizontal" theme="dark" active-name="0" @on-select="selectMenu">
-        <div class="layout-logo"></div>
+        <div class="layout-logo" >星云零食榜</div>
         <div class="layout-nav">
             <menu-item name="0">
               <Icon type="ios-navigate"></Icon>
@@ -59,9 +59,9 @@
     <i-footer>
       <i-row>
         <span>
-        <Avatar src="https://avatars0.githubusercontent.com/u/10058453" shape="square" size="large" />
+        <Avatar src="./Kaisen Don.png" shape="square" size="large" />
       </span>
-        <span>Author: kagawaCaicai</span>
+        <span>Author: kaisen</span>
       </i-row>
     </i-footer>
     </div>
@@ -73,7 +73,7 @@
     el: '#app',
     data: function(){
       return {
-      dappAddress: "n1nn4ndQKyD1DmMkH8HGBbATGUJ5umuoHQD",
+      dappAddress: "n1gpzqQGB5DApcSP4bPpoU11poqFaWDHDSx",
       showTab: 0,
       snackName: "",
       snackDesc: "",
@@ -89,7 +89,6 @@
         {
           title: '好评',
           key: 'like',
-          sortable: true
         }],
       columns1: [{
           title: '来自',
@@ -214,7 +213,7 @@
             }
             let snackName = this.snackName.trim(),snackDesc = this.snackDesc.trim();
             if(snackName.length ==0 || snackDesc.length == 0){
-             、、 this.modal1 = true;
+              this.modal1 = true;
               return;
             }
             var to = this.dappAddress;
