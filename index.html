@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+  <!--  Meta  -->
+  <meta charset="UTF-8" />
+  <title>星云零食榜</title>
+  <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/iview/2.14.0/styles/iview.css">
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.5.13/vue.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iview/2.14.0/iview.min.js"></script>
+  <link rel="stylesheet" href="styles/index.processed.css">
+</head>
+
+<body>
+  <div id="app">
+    <i-header>
+      <i-menu mode="horizontal" theme="dark" active-name="0" @on-select="selectMenu">
+        <div class="layout-logo"></div>
+        <div class="layout-nav">
+            <menu-item name="0">
+              <Icon type="ios-navigate"></Icon>
+              零食榜
+            </menu-item>
+            <menu-item name="1" on-select="selectMenu">
+              <Icon type="ios-keypad"></Icon>
+              我发布的
+            </menu-item>
+        </div>
+        </i-menu>
+    </i-header>
+    <i-content>
+      <div v-show="showTab==1">
+        <i-table :columns="mineColumn" :data="mineData"></i-table>
+      </div>
+      <div v-show="showTab==0">
+        <Row>
+          <i-col span="24" offset="10">
+            <i-button id="showModalBtn" type="primary" @click="modal1=true" size="large">我要发布</i-button>
+          </i-col>
+        </Row>
+        <i-table :columns="columns1" :data="allData"></i-table>
+        <Modal v-model="modal1" title="我要发布零食" @on-ok="pay">
+          <p>名称*</p>
+          <i-input v-model="snackName" size="large" placeholder="名字"></i-input>
+          <p>描述*</p>
+          <i-input v-model="snackDesc" size="large" placeholder="关于零食描述" type="textarea" :rows="4" ></i-input>
+        </Modal>
+      </div>
+          <Modal
+            v-model="webExtensionWalletShow"
+            title="您的浏览器不支持星云dapp!"
+            :mask-closable="false"
+            :closable="false">
+            <p>请先安装<a target="_blank" href="https://github.com/ChengOrangeJu/WebExtensionWallet">WebExtensionWallet</a></p>
+            <p slot="footer"><a @click="reload">刷新</a></p>
+        </Modal>
+    </i-content>
+    <i-footer>
+      <i-row>
+        <span>
+        <Avatar src="https://avatars0.githubusercontent.com/u/10058453" shape="square" size="large" />
+      </span>
+        <span>Author: kagawaCaicai</span>
+      </i-row>
+    </i-footer>
+    </div>
+<script src="lib/nebPay.js"></script>
+<script>
+  var NebPay = require("nebpay");
+  var nebPay = new NebPay();
+  var vm = new Vue({
+    el: '#app',
+    data: function(){
+      return {
+      dappAddress: "n1nn4ndQKyD1DmMkH8HGBbATGUJ5umuoHQD",
+      showTab: 0,
+      snackName: "",
+      snackDesc: "",
+      modal1: false,
+      mineColumn:[{
+          title: '名称',
+          key: 'name'
+        },
+        {
+          title: '描述',
+          key: 'desc'
+        },
+        {
+          title: '好评',
+          key: 'like',
+          sortable: true
+        }],
+      columns1: [{
+          title: '来自',
+          key: 'from'
+        }, {
+          title: '名称',
+          key: 'name'
+        },
+        {
+          title: '描述',
+          key: 'desc'
+        },
+        {
+          title: '好评',
+          key: 'like',
+          sortable: true
+        },
+        {
+          title: '',
+          key: 'action',
+          width: 200,
+          align: 'center',
+          render: (h, params) => {
+            return h('div', [
+              h('Button', {
+                props: {
+                  type: 'primary',
+                  size: 'small',
+                  icon: "thumbsup"
+                },
+                style: {
+                  marginRight: '5px'
+                },
+                on: {
+                  click: () => {
+                    let row =  params.row;
+                    this.clickHandler(row.idx,true);
+                  }
+                }
+              }, '点赞'),
+              h('Button', {
+                props: {
+                  type: 'error',
+                  size: 'small',
+                  icon: "thumbsdown"
+                },
+                on: {
+                  click: () => {
+                    let row =  params.row;
+                    this.clickHandler(row.idx,false);
+                  }
+                }
+              }, '点灭')
+            ]);
+          }
+        }
+      ],
+      allData: [],
+      mineData:[],
+      webExtensionWalletShow:false
+      }
+    },
+    mounted:function(){
+        if(this.walletCheck()){
+            this.initialize();
+        }
+    },
+    methods: {
+      clickHandler:function(idx, isLike){
+        var to = this.dappAddress;
+        var value = "0";
+        var callFunction = "like";
+        if(!isLike){
+          callFunction = "dislike";
+        }
+        var callArgs = JSON.stringify([idx])
+        var _this = this;
+        nebPay.call(to, value, callFunction, callArgs, {    //使用nebpay的call接口去调用合约,
+                listener: this.submitCb
+        });
+      },
+      reload:this.initialize,
+      initialize: function () {
+            var to = this.dappAddress;
+            var value = "0";
+            var callFunction = "getAll";
+
+            var callArgs = JSON.stringify([""])
+            var _this = this;
+
+            nebPay.simulateCall(to, value, callFunction, callArgs, {    //查询全部数据
+                listener: function(resp){
+                    var result = resp.result;
+                    var resultObj = JSON.parse(result);
+                    _this.allData = resultObj;
+                }
+            });
+
+            callFunction = "getMine";
+            nebPay.simulateCall(to, value, callFunction, callArgs, {    //查找我的数据
+                listener: function(resp){
+                    var result = resp.result;
+                    var resultObj = JSON.parse(result);
+                    _this.mineData = resultObj;
+                }
+            });
+          },
+      walletCheck:function(){
+            if (typeof(webExtensionWallet) === "undefined") {
+                this.webExtensionWalletShow = true
+                return false;
+            }
+            return true;
+        },
+      selectMenu(name) {
+        this.showTab = name;
+      },
+      pay:function(){
+            if (typeof(webExtensionWallet) === "undefined") {
+                this.webExtensionWalletShow = true
+                return
+            }
+            let snackName = this.snackName.trim(),snackDesc = this.snackDesc.trim();
+            if(snackName.length ==0 || snackDesc.length == 0){
+             、、 this.modal1 = true;
+              return;
+            }
+            var to = this.dappAddress;
+            var value = "0";
+            var callFunction = "submit";
+            var callArgs = [snackName,snackName];
+            nebPay.call(to, value, callFunction, JSON.stringify(callArgs), {    //使用nebpay的call接口去调用合约,
+                listener: this.submitCb
+            });
+      },
+      submitCb:function(resp){
+            let _this = this;
+            this.$Modal.success({
+            title: '提交成功',
+            content: '需要进行区块确认，这可能会花费几十秒钟的时间。</br>你可以在<a href="https://wallet.nasscan.io/check.html" target="_blank">https://wallet.nasscan.io/check.html</a>中</br>使用<code>'+resp.txhash+'</code>查询进度！',
+            width: 600,
+            onOk:_this.initialize,
+            })
+            this.snackDesc ="";
+            this.snackName = "";
+        },
+    }
+  });
+</script>
+</body>
+
+</html>
