@@ -212,14 +212,14 @@
                 return
             }
             let snackName = this.snackName.trim(),snackDesc = this.snackDesc.trim();
-            if(snackName.length ==0 || snackDesc.length == 0){
-              this.modal1 = true;
+            if(snackName.length == 0 && snackDesc.length == 0){
+              alert("不能都为空");
               return;
             }
             var to = this.dappAddress;
             var value = "0";
             var callFunction = "submit";
-            var callArgs = [snackName,snackName];
+            var callArgs = [snackName,snackDesc];
             nebPay.call(to, value, callFunction, JSON.stringify(callArgs), {    //使用nebpay的call接口去调用合约,
                 listener: this.submitCb
             });
