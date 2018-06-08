@@ -4,6 +4,7 @@
 <head>
 
   <!--  Meta  -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta charset="UTF-8" />
   <title>星云零食榜</title>
   <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/iview/2.14.0/styles/iview.css">
@@ -196,8 +197,16 @@
                 }
             });
           },
+        isMobile:function() {
+            var filter = 'win16|win32|win64|mac|macintel';
+            if (navigator.platform) return filter.indexOf(navigator.platform.toLowerCase()) < 0 ? true : false;
+        },
+        isInstalledWallet:function() {
+            if (!this.isMobile()) return window.webExtensionWallet !== undefined;
+            else return true;
+        },
       walletCheck:function(){
-            if (typeof(webExtensionWallet) === "undefined") {
+            if (!this.isInstalledWallet()) {
                 this.webExtensionWalletShow = true
                 return false;
             }
@@ -207,7 +216,7 @@
         this.showTab = name;
       },
       pay:function(){
-            if (typeof(webExtensionWallet) === "undefined") {
+            if (!this.isInstalledWallet()) {
                 this.webExtensionWalletShow = true
                 return
             }
